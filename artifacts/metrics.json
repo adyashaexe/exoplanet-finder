@@ -1,0 +1,290 @@
+{
+  "trained_at": "2026-11-07T17:32:17+00:00",
+  "dataset": {
+    "path": "/home/claude/exoplanet-finder/data/processed/dataset.npz",
+    "n": 500,
+    "positives": 185,
+    "splits": {
+      "train": 350,
+      "val": 75,
+      "test": 75
+    },
+    "kinds": {
+      "eclipsing_binary": 104,
+      "grazing_eb": 89,
+      "noise": 66,
+      "planet": 185,
+      "systematic": 56
+    }
+  },
+  "view_config": {
+    "global_bins": 2001,
+    "local_bins": 201,
+    "local_half_width_durations": 3.0,
+    "detrend_window_days": 2.0,
+    "clip_sigma_upper": 5.0,
+    "bls_min_period": 0.6,
+    "bls_max_period": 100.0,
+    "bls_max_points": 20000
+  },
+  "aux_features": [
+    "log_period",
+    "log_duration_hr",
+    "duty_cycle",
+    "log_depth_ppm",
+    "log_snr",
+    "odd_even_sigma",
+    "secondary_ratio",
+    "log_n_transits",
+    "log_noise_ppm"
+  ],
+  "baseline": {
+    "val": {
+      "n": 75,
+      "positives": 27,
+      "threshold": 0.32530561698826965,
+      "pr_auc": 0.7598184371297239,
+      "roc_auc": 0.8410493827160495,
+      "precision": 0.5813953488372093,
+      "recall": 0.9259259259259259,
+      "f1": 0.7142857142857142,
+      "accuracy": 0.7333333333333333,
+      "confusion": {
+        "tn": 30,
+        "fp": 18,
+        "fn": 2,
+        "tp": 25
+      }
+    },
+    "test": {
+      "n": 75,
+      "positives": 28,
+      "threshold": 0.32530561698826965,
+      "pr_auc": 0.8584466098372384,
+      "roc_auc": 0.8704407294832827,
+      "precision": 0.5952380952380952,
+      "recall": 0.8928571428571429,
+      "f1": 0.7142857142857143,
+      "accuracy": 0.7333333333333333,
+      "confusion": {
+        "tn": 30,
+        "fp": 17,
+        "fn": 3,
+        "tp": 25
+      }
+    },
+    "by_kind": {
+      "eclipsing_binary": {
+        "n": 8,
+        "mean_probability": 0.025218001389219608,
+        "flagged_as_planet": 0.0
+      },
+      "grazing_eb": {
+        "n": 19,
+        "mean_probability": 0.3420085245036506,
+        "flagged_as_planet": 0.5263157894736842
+      },
+      "noise": {
+        "n": 12,
+        "mean_probability": 0.15557210288421908,
+        "flagged_as_planet": 0.16666666666666666
+      },
+      "planet": {
+        "n": 28,
+        "mean_probability": 0.7253049636855458,
+        "flagged_as_planet": 0.8928571428571429
+      },
+      "systematic": {
+        "n": 8,
+        "mean_probability": 0.48253649266957155,
+        "flagged_as_planet": 0.625
+      }
+    }
+  },
+  "cnn": {
+    "val": {
+      "n": 75,
+      "positives": 27,
+      "threshold": 0.7271735072135925,
+      "pr_auc": 0.860864491159641,
+      "roc_auc": 0.9135802469135803,
+      "precision": 0.9090909090909091,
+      "recall": 0.7407407407407407,
+      "f1": 0.8163265306122449,
+      "accuracy": 0.88,
+      "confusion": {
+        "tn": 46,
+        "fp": 2,
+        "fn": 7,
+        "tp": 20
+      }
+    },
+    "test": {
+      "n": 75,
+      "positives": 28,
+      "threshold": 0.7271735072135925,
+      "pr_auc": 0.8342691947237304,
+      "roc_auc": 0.8898176291793313,
+      "precision": 0.7586206896551724,
+      "recall": 0.7857142857142857,
+      "f1": 0.7719298245614034,
+      "accuracy": 0.8266666666666667,
+      "confusion": {
+        "tn": 40,
+        "fp": 7,
+        "fn": 6,
+        "tp": 22
+      }
+    },
+    "by_kind": {
+      "eclipsing_binary": {
+        "n": 8,
+        "mean_probability": 0.0024098458234220743,
+        "flagged_as_planet": 0.0
+      },
+      "grazing_eb": {
+        "n": 19,
+        "mean_probability": 0.2897263169288635,
+        "flagged_as_planet": 0.15789473684210525
+      },
+      "noise": {
+        "n": 12,
+        "mean_probability": 0.25921061635017395,
+        "flagged_as_planet": 0.08333333333333333
+      },
+      "planet": {
+        "n": 28,
+        "mean_probability": 0.8081105947494507,
+        "flagged_as_planet": 0.7857142857142857
+      },
+      "systematic": {
+        "n": 8,
+        "mean_probability": 0.5964156985282898,
+        "flagged_as_planet": 0.375
+      }
+    },
+    "training": [
+      {
+        "epoch": 1,
+        "train_loss": 0.8559923614774432,
+        "val_pr_auc": 0.3523034476404995
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.7823795655795506,
+        "val_pr_auc": 0.3822898211333359
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.7152557904379708,
+        "val_pr_auc": 0.45724815080882975
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.6277699191229684,
+        "val_pr_auc": 0.40522385783760273
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.6418372235979353,
+        "val_pr_auc": 0.46299190536393675
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.6795259867395673,
+        "val_pr_auc": 0.51452621024318
+      },
+      {
+        "epoch": 7,
+        "train_loss": 0.5778742580754417,
+        "val_pr_auc": 0.7442882686392989
+      },
+      {
+        "epoch": 8,
+        "train_loss": 0.5850834250450134,
+        "val_pr_auc": 0.7552988047153018
+      },
+      {
+        "epoch": 9,
+        "train_loss": 0.49561617476599557,
+        "val_pr_auc": 0.7348341220565016
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.4673624641554696,
+        "val_pr_auc": 0.5839118840112172
+      },
+      {
+        "epoch": 11,
+        "train_loss": 0.390252799476896,
+        "val_pr_auc": 0.7486857147181165
+      },
+      {
+        "epoch": 12,
+        "train_loss": 0.32834451079368593,
+        "val_pr_auc": 0.7155188966258146
+      },
+      {
+        "epoch": 13,
+        "train_loss": 0.3362294115339007,
+        "val_pr_auc": 0.7520661956668315
+      },
+      {
+        "epoch": 14,
+        "train_loss": 0.27401529771941047,
+        "val_pr_auc": 0.7700713114775057
+      },
+      {
+        "epoch": 15,
+        "train_loss": 0.22183296118463788,
+        "val_pr_auc": 0.8041615379075424
+      },
+      {
+        "epoch": 16,
+        "train_loss": 0.26845150555883135,
+        "val_pr_auc": 0.860864491159641
+      },
+      {
+        "epoch": 17,
+        "train_loss": 0.24446176614080156,
+        "val_pr_auc": 0.8370908874299534
+      },
+      {
+        "epoch": 18,
+        "train_loss": 0.15933526584080288,
+        "val_pr_auc": 0.8072305761082432
+      },
+      {
+        "epoch": 19,
+        "train_loss": 0.13472600706986018,
+        "val_pr_auc": 0.8068174860857367
+      },
+      {
+        "epoch": 20,
+        "train_loss": 0.16203122530664715,
+        "val_pr_auc": 0.8044892612642869
+      }
+    ],
+    "device": "cpu",
+    "seconds": 23.1
+  },
+  "ensemble": {
+    "test": {
+      "n": 75,
+      "positives": 28,
+      "threshold": 0.5790615994820607,
+      "pr_auc": 0.9217329463211877,
+      "roc_auc": 0.9126139817629181,
+      "precision": 0.8275862068965517,
+      "recall": 0.8571428571428571,
+      "f1": 0.8421052631578947,
+      "accuracy": 0.88,
+      "confusion": {
+        "tn": 42,
+        "fp": 5,
+        "fn": 4,
+        "tp": 24
+      }
+    }
+  }
+}

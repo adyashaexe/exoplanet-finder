@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exoplanet Finder</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%2316202c'/%3E%3Ccircle cx='22' cy='13' r='4.5' fill='%23eb6834'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="13" fill="var(--ink)"/><circle cx="22" cy="13" r="4.5" fill="var(--series-2)"/>
+        </svg>
+        <span>Exoplanet Finder</span>
+      </div>
+      <div class="top-actions">
+        <label for="model-select" id="model-label" hidden>Model</label>
+        <select id="model-select" hidden></select>
+        <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark theme">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="source" aria-label="Choose a light curve">
+    <div class="wrap">
+      <div class="tabs" role="tablist" aria-label="Light curve source">
+        <button class="tab" role="tab" id="tab-examples" aria-controls="panel-examples" aria-selected="true">Examples</button>
+        <button class="tab" role="tab" id="tab-upload" aria-controls="panel-upload" aria-selected="false" tabindex="-1">Your file</button>
+        <button class="tab" role="tab" id="tab-star" aria-controls="panel-star" aria-selected="false" tabindex="-1">Star ID</button>
+      </div>
+
+      <div class="panel" id="panel-examples" role="tabpanel" aria-labelledby="tab-examples">
+        <button class="chip" data-kind="planet" aria-pressed="true">Planet</button>
+        <button class="chip" data-kind="eclipsing_binary" aria-pressed="false">Eclipsing binary</button>
+        <button class="chip" data-kind="grazing_eb" aria-pressed="false">Grazing binary</button>
+        <button class="chip" data-kind="systematic" aria-pressed="false">Instrument glitch</button>
+        <button class="chip" data-kind="noise" aria-pressed="false">Noise only</button>
+        <button class="btn quiet" id="redraw" type="button">Draw another star</button>
+        <p class="hint">Simulated 30-minute photometry with starspots, flares and gaps. Each draw is a new random star.</p>
+      </div>
+
+      <div class="panel" id="panel-upload" role="tabpanel" aria-labelledby="tab-upload" hidden>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept=".csv,.txt,.tsv,.fits,.fit,.gz">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v4h16v-4"/></svg>
+          <span>Choose or drop a file</span>
+        </label>
+        <p class="hint">CSV or text with <code>time</code>, <code>flux</code> and optional <code>flux_err</code> columns, or a Kepler/TESS light curve FITS file. Up to 40 MB.</p>
+      </div>
+
+      <form class="panel" id="panel-star" role="tabpanel" aria-labelledby="tab-star" hidden>
+        <label class="sr-only" for="star-id">Star ID</label>
+        <input type="text" id="star-id" inputmode="numeric" placeholder="KIC 8462852" autocomplete="off">
+        <label class="sr-only" for="mission">Mission</label>
+        <select id="mission"><option value="kepler">Kepler (KIC)</option><option value="tess">TESS (TIC)</option></select>
+        <button class="btn" type="submit">Analyze</button>
+        <p class="hint">Downloads every available quarter or sector from NASA's MAST archive, so the server needs internet access. A full Kepler star can take a minute.</p>
+      </form>
+
+      <div class="status" id="status" role="status" aria-live="polite">Loading models…</div>
+    </div>
+  </section>
+
+  <main class="report" id="report" hidden>
+    <section class="verdict" aria-labelledby="verdict-title">
+      <div class="wrap">
+        <div>
+          <h1 class="verdict-title" id="verdict-title"></h1>
+          <p class="verdict-sub" id="verdict-sub"></p>
+          <div class="ruler" id="ruler" role="img">
+            <span class="ruler-val" id="ruler-val"></span>
+            <div class="ruler-track"><div class="ruler-zone"></div></div>
+            <div class="ruler-cut"></div>
+            <div class="ruler-marker"></div>
+            <span class="ruler-cutlabel" id="ruler-cut"></span>
+            <div class="ruler-ends"><span>Unlike a planet</span><span>Like a planet</span></div>
+          </div>
+          <ul class="chips-models" id="per-model" aria-label="Score from each model"></ul>
+          <p class="truth" id="truth" hidden></p>
+        </div>
+        <dl class="facts" id="facts"></dl>
+      </div>
+    </section>
+
+    <div class="wrap layout">
+      <div class="charts">
+        <section class="chart-sec">
+          <div class="sec-head">
+            <div>
+              <h2>Brightness over time</h2>
+              <p class="cap" id="cap-lc"></p>
+            </div>
+            <div class="seg" role="group" aria-label="Light curve view">
+              <button type="button" data-view="raw" aria-pressed="true">As measured</button>
+              <button type="button" data-view="flat" aria-pressed="false">Drift removed</button>
+            </div>
+          </div>
+          <div class="plot" id="plot-lc"></div>
+          <details class="data" data-table="lc"><summary>Show as table</summary><div class="table-wrap"></div></details>
+        </section>
+
+        <section class="chart-sec">
+          <h2>Which orbital period fits best</h2>
+          <p class="cap">A tall peak means dips repeat at that spacing. Peaks at half or double the best period are usually echoes of the same signal.</p>
+          <div class="plot" id="plot-pg"></div>
+          <details class="data" data-table="pg"><summary>Show as table</summary><div class="table-wrap"></div></details>
+        </section>
+
+        <section class="chart-sec">
+          <h2 id="fold-title">Every orbit stacked together</h2>
+          <p class="cap">A planet leaves a flat-bottomed dip with steep sides. A pointed V, or a second dip halfway around the orbit, suggests two stars eclipsing each other.</p>
+          <div class="pair">
+            <div><h3>The whole orbit</h3><div class="plot" id="plot-fg"></div></div>
+            <div>
+              <h3>Zoom on the dip</h3><div class="plot" id="plot-fl"></div>
+              <div id="attn-wrap"><div class="plot" id="plot-attn"></div></div>
+            </div>
+          </div>
+          <p class="cap" id="cap-attn" style="margin-top:6px"></p>
+          <details class="data" data-table="fold"><summary>Show as table</summary><div class="table-wrap"></div></details>
+        </section>
+      </div>
+
+      <aside class="side" aria-label="Evidence and model details">
+        <section>
+          <h2>Vetting checks</h2>
+          <p class="cap">Rules of thumb astronomers apply before chasing a candidate. These are separate from the model's score.</p>
+          <ul class="checks" id="checks"></ul>
+        </section>
+        <section id="card">
+          <h2>How the model did on held-out stars</h2>
+          <div id="card-body"></div>
+        </section>
+        <section>
+          <details class="data"><summary>Measured features</summary><div class="table-wrap feat" id="features"></div></details>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">A high score is a reason to follow up, not a confirmation. Candidates are confirmed with extra observations.</div>
+  </footer>
+
+  <script src="/static/vendor/plotly-basic.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
