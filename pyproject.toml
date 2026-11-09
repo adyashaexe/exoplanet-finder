@@ -36,7 +36,7 @@ exofinder = "exofinder.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-exofinder = ["api/static/*", "api/static/vendor/*"]
+exofinder = ["api/static/*", "api/static/vendor/*", "api/static/vendor/fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

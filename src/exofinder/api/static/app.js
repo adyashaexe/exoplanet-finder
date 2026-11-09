@@ -39,6 +39,21 @@
   const num = (n, d = 0) => Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
   const pct = (x) => `${Math.round(x * 100)}%`;
   const list = (a) => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
+  const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /** Count a number up from zero once the entrance has started. */
+  function countUp(node) {
+    const to = Number(node.dataset.to), dec = Number(node.dataset.dec || 0);
+    if (reduceMotion()) { node.textContent = num(to, dec); return; }
+    const t0 = performance.now(), delay = 350, dur = 1100;
+    node.textContent = num(0, dec);
+    const step = (now) => {
+      const k = Math.min(1, Math.max(0, (now - t0 - delay) / dur));
+      node.textContent = num(to * (1 - Math.pow(1 - k, 3)), dec);
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
 
   async function request(url, init) {
     const r = await fetch(url, init);
@@ -101,7 +116,7 @@
 
   /* ---------------------------------------------------------------- theme */
   function currentTheme() {
-    return document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    return document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   }
   try { const t = localStorage.getItem('exofinder-theme'); if (t) document.documentElement.dataset.theme = t; } catch { /* storage blocked */ }
   $('#theme').addEventListener('click', () => {
@@ -123,8 +138,10 @@
       : (flagged.length ? `What stands out: ${list(issues)}.` : 'The dips do not resemble the confirmed planets the model learned from.');
 
     const ruler = $('#ruler');
-    ruler.style.setProperty('--score', v.score);
     ruler.style.setProperty('--cut', v.threshold);
+    ruler.style.setProperty('--score', 0);          // start at the left edge, then sweep to the score
+    void ruler.offsetWidth;
+    requestAnimationFrame(() => ruler.style.setProperty('--score', v.score));
     ruler.setAttribute('aria-label', `Planet-likeness score ${v.score.toFixed(2)} on a scale from 0 to 1. The cut-off for calling a planet is ${v.threshold.toFixed(2)}.`);
     const val = $('#ruler-val');
     val.textContent = `Score ${v.score.toFixed(2)}`;
@@ -153,17 +170,24 @@
     }
 
     const c = r.candidate, t = r.target;
-    const fact = (label, value, unit, wide = false) =>
-      el('div', { class: wide ? 'wide' : '' }, el('dt', { text: label }), el('dd', {}, value, unit ? el('small', { text: unit }) : null));
+    let n = 0;
+    const fact = (label, value, unit, wide = false, count = null) => {
+      const val = el('span', { text: value });
+      if (count) { val.dataset.to = count[0]; val.dataset.dec = count[1]; }
+      return el('div', { class: wide ? 'wide' : '', style: `--i:${n++}` },
+        el('dt', { text: label }), el('dd', {}, val, unit ? el('small', { text: unit }) : null));
+    };
+    const pd = c.period_days < 10 ? 3 : 2;
     $('#facts').replaceChildren(
-      fact('Orbital period', num(c.period_days, c.period_days < 10 ? 3 : 2), 'days'),
-      fact('Dip depth', num(c.depth_ppm), 'ppm'),
-      fact('Dip length', num(c.duration_hours, 1), 'hours'),
-      fact('Signal-to-noise', num(c.snr, 1)),
-      fact('Transits seen', String(c.transits_observed)),
-      fact('Search strength', num(c.sde, 1), 'sigma'),
+      fact('Orbital period', num(c.period_days, pd), 'days', false, [c.period_days, pd]),
+      fact('Dip depth', num(c.depth_ppm), 'ppm', false, [c.depth_ppm, 0]),
+      fact('Dip length', num(c.duration_hours, 1), 'hours', false, [c.duration_hours, 1]),
+      fact('Signal-to-noise', num(c.snr, 1), '', false, [c.snr, 1]),
+      fact('Transits seen', String(c.transits_observed), '', false, [c.transits_observed, 0]),
+      fact('Search strength', num(c.sde, 1), 'sigma', false, [c.sde, 1]),
       fact('Light curve', `${t.name}: ${num(t.points)} points over ${num(t.baseline_days, 1)} days, ${num(t.noise_ppm)} ppm noise`, '', true),
     );
+    $$('#facts [data-to]').forEach(countUp);
   }
 
   function renderChecks(r) {
@@ -172,7 +196,7 @@
     for (const c of r.checks) {
       const icon = el('span');
       icon.innerHTML = ICON[c.status]; // static, trusted markup
-      ul.append(el('li', {}, icon,
+      ul.append(el('li', { style: `--i:${ul.children.length}` }, icon,
         el('div', {},
           el('div', { class: 'head' }, c.label, ' ', el('span', { text: `· ${STATUS_WORD[c.status]}` })),
           el('p', { text: c.detail }))));
@@ -357,12 +381,17 @@
 
   /* ---------------------------------------------------------------- render */
   function render(r) {
-    $('#report').hidden = false;
+    const rep = $('#report');
+    rep.hidden = false;
+    rep.classList.remove('enter');                 // replay the entrance for every new star
+    void rep.offsetWidth;
+    rep.classList.add('enter');
     renderVerdict(r);
     renderChecks(r);
     renderCard(r);
     renderFeatures(r);
     drawCharts(r);
+    if (window.ExoStage) window.ExoStage.set(r);
     $$('details.data[data-table][open]').forEach((d) => {
       const [cols, rows] = TABLES[d.dataset.table](r);
       d.querySelector('.table-wrap').replaceChildren(table(cols, rows));
